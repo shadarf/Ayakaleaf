@@ -1,0 +1,212 @@
+{
+  "main": {
+    "id": "ef1fbb6fb148e4ae",
+    "type": "split",
+    "children": [
+      {
+        "id": "385c43e56589899d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "425691b172e7c197",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Tutorial_End2End.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Tutorial_End2End"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "afc9dd23edd79529",
+    "type": "split",
+    "children": [
+      {
+        "id": "bf9d37d636ed332c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a5cd9d4101d31c8f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "e5a5a407ba10426a",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "e1e70a606b5109a5",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "ab5b795e5464058b",
+    "type": "split",
+    "children": [
+      {
+        "id": "4b25b1171c9f0d36",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "984702312eceadf3",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Tutorial_End2End.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "0e86e13d344c8d28",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Tutorial_End2End.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "1663a079928929f0",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "4785fcfc00b11889",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "0fa74ba53acd70e6",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Tutorial_End2End.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "425691b172e7c197",
+  "lastOpenFiles": [
+    "Tutorial_End2End.md",
+    "Plan.md",
+    "RUN_INSTRUCTIONS.md",
+    "TroubleShooting.md",
+    "log.txt",
+    "screenshots",
+    "screenshots/Pasted image 20261122221345.png",
+    "screenshots/Pasted image 20261122214530.png",
+    "wiki/Tut0.md",
+    "ayakaleaf-pro.zip",
+    "wiki/Tut1.md",
+    "wiki/Tut8.md",
+    "wiki/Tut7.md",
+    "wiki/Tut6.md",
+    "wiki/Tut5.md",
+    "wiki/Tut4.md",
+    "wiki/Tut3.md",
+    "wiki/Tut2.md"
+  ]
+}

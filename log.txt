@@ -1,0 +1,243 @@
+# Ayakaleaf Pro Installation - Complete Change Log
+# Generated: 2026-11-22
+# Project: D:\PROJECTS_home\Ayakaleaf
+
+================================================================================
+= INSTALLATION CHANGE LOG
+================================================================================
+
+## [2026-11-22 20:00] INITIAL SETUP
+- Read wiki tutorials (Tut0.md - Tut8.md)
+- Created Plan.md with 5 milestones
+- Verified WSL 2 version: 2.4.13.0
+- Verified Docker Desktop installed: v28.0.4
+
+## [2026-11-22 20:15] DOCKER DESKTOP STARTUP
+- Started Docker Desktop from C:\Program Files\Docker\Docker\Docker Desktop.exe
+- Verified Docker daemon running: `docker ps` returns empty list
+- Verified resources: CPUs=22, Memory≈8GB
+
+## [2026-11-22 20:30] TOOLKIT ACQUISITION
+- Cloned ayakaleaf-pro repo (wrong repo - contains source code)
+- Discovered correct toolkit repo: https://github.com/ayaka-notes/toolkit.git
+- Attempted clone to /home/shadm/ayakaleaf-toolkit (failed - dir existed)
+- Found empty directory with only .git folder
+- Fixed by re-initializing git and adding correct remote:
+  - `git remote remove origin`
+  - `git remote add origin https://github.com/ayaka-notes/toolkit.git`
+  - `git fetch origin && git checkout master`
+- Toolkit now at /home/shadm/ayakaleaf-toolkit (and Windows copy at C:\Users\shadm\ayakaleaf-toolkit)
+
+## [2026-11-22 20:45] UBUNTU WSL ISSUES
+- Ubuntu not installed initially (only docker-desktop distro)
+- Installed Ubuntu via `wsl --install -d Ubuntu`
+- Ubuntu failed to start: "Catastrophic failure" / WSL_E_DISTRO_NOT_FOUND
+- Fixed by: `wsl --unregister Ubuntu` → `wsl --install -d Ubuntu` → `wsl --update` (to 3.0.5)
+- Ubuntu now working: `wsl -d Ubuntu -- bash -c "echo 'Ubuntu running'"`
+
+## [2026-11-22 21:00] TOOLKIT SETUP IN UBUNTU
+- Copied toolkit to Ubuntu: `cp -r /mnt/host/d/home/shadm/ayakaleaf-toolkit /home/shadm/`
+- Fixed line endings: `find . -type f -exec sed -i 's/\r$//' {} \;`
+- Installed dependencies: `apt-get update && apt-get install -y bash openssl`
+
+## [2026-11-22 21:15] CONFIGURATION FIXES
+
+### [21:15] MongoDB Version Fix
+- Initial config had `MONGO_VERSION=7.0` → Failed validation
+- Error: "Invalid MONGO_VERSION: MONGO_VERSION=7.0"
+- **Fix**: Changed to `MONGO_VERSION=8.0` in config/overleaf.rc
+- MongoDB 8.0 required for Ayakaleaf Pro (checked via healthcheck using mongosh)
+
+### [21:20] read_configuration Function Fix
+- Toolkit's `lib/shared-functions.sh` had broken `read_configuration` function
+- Regex `s/^$name=(["']?)(.+)\1$/\2/` failed to parse values correctly
+- Values read as `MONGO_VERSION=7.0` (with literal quotes) instead of `7.0`
+- **Fix**: Replaced function with parameter expansion approach:
+  ```bash
+  line=${line#*=}
+  line=${line#\"}; line=${line%\"}
+  line=${line#'"'"'}; line=${line%'"'"'}
+  echo "$line"
+  ```
+- Applied via sed replacement of entire function block
+
+### [21:25] Secrets Generation
+- Generated OVERLEAF_SESSION_SECRET: `openssl rand -hex 32`
+  - Result: 38c132c99e1ac94ea7ec49b2c67c7dcfa4c2574aeaa7a7700baec4f8d4f09c97
+- Generated OVERLEAF_INVITE_TOKEN_SECRET: `openssl rand -base64 32`
+  - Result: 0+M+x2bPKXLeEkfi+WEWZ8tVlnEBU9lWUKTK9vkaQAU=
+- Both added to config/variables.env
+
+### [21:30] Docker Socket Fix for Ubuntu
+- Ubuntu couldn't access Docker daemon: "docker: command not found"
+- Docker Desktop WSL integration exposes socket at `/mnt/wsl/docker-desktop/shared-sockets/host-services/docker.proxy.sock`
+- **Fix**: Created symlink:
+  ```bash
+  sudo ln -sf /mnt/wsl/docker-desktop/shared-sockets/host-services/docker.proxy.sock /var/run/docker.sock
+  sudo chown root:docker /var/run/docker.sock
+  ```
+- Also added www-data to dockeronhost group inside container
+
+## [2026-11-22 21:35] FIRST LAUNCH
+
+### [21:35] bin/up -d First Run
+- Pulled MongoDB 8.0 (~300MB)
+- Pulled Redis 7.4
+- Pulled Ayakaleaf Pro 6.3.4
+- **Pulled TeX Live 2026 Full (~10GB)** - took ~15 minutes
+- Started MongoDB with replica set initiation
+- Started Redis
+- Started ShareLaTeX
+
+### [21:50] Startup Race Condition Discovered
+- Containers restarting every ~60 seconds
+- Logs showed: `[ioredis] Unhandled error event: Error: getaddrinfo ENOTFOUND redis`
+- Root cause: ShareLaTeX Node.js services tried to connect to Redis before Redis was fully ready
+- Runit interpreted connection failures as service failures → graceful shutdown → restart loop
+
+### [21:55] Race Condition Fix
+- Wait for Redis to show "healthy" in `docker ps`
+- Then: `bin/docker-compose restart sharelatex`
+- After restart, all 15 services stable:
+  - web-overleaf, web-api-overleaf, clsi-overleaf, docstore-overleaf, etc.
+- All services running stable (uptime > 5 minutes)
+
+## [2026-11-22 22:00] VERIFICATION
+
+### [22:00] Web Access Verified
+- Ubuntu: `curl -I http://localhost:8080/launchpad` → HTTP 200 OK
+- Windows: `curl.exe -I http://localhost:8080/launchpad` → HTTP 200 OK
+- Browser access: http://localhost:8080/launchpad → Redirects to /login
+
+### [22:05] Container Health
+- mongo: Up (healthy) - healthcheck passes with mongosh
+- redis: Up - AOF persistence enabled
+- sharelatex: Up - all 15 runit services running
+- Memory usage: sharelatex ~218MB, mongo ~212MB, redis ~7MB
+
+### [22:10] Sandbox Compilation Verified
+- CLSI service running (clsi-overleaf)
+- Compile directory: /home/shadm/ayakaleaf-toolkit/data/overleaf/data/compiles
+- TeX Live 2026 Full image available
+- Docker socket accessible from container (www-data in dockeronhost group)
+
+## [2026-11-22 22:15] DOCUMENTATION UPDATES
+
+### [22:15] Updated Tutorial_End2End.md
+- Added Docker socket symlink fix (Section 1.4)
+- Added read_configuration fix (Section 2.3)
+- Added MongoDB version 8.0 requirement (Section 3.2)
+- Added secrets generation (Section 3.3)
+- Added startup race condition fix (Section 4.1b)
+- Added reliable start commands table (Daily Operations)
+- Expanded troubleshooting table with 20+ issues
+
+### [22:20] Created log.txt
+- This file created with complete change history
+
+================================================================================
+= CONFIGURATION SUMMARY (FINAL WORKING STATE)
+================================================================================
+
+## config/overleaf.rc
+```bash
+PROJECT_NAME=ayakaleaf-wsl
+OVERLEAF_DATA_PATH=data/overleaf
+SERVER_PRO=true
+OVERLEAF_LISTEN_IP=127.0.0.1
+OVERLEAF_PORT=8080
+SIBLING_CONTAINERS_ENABLED=true
+DOCKER_SOCKET_PATH=/var/run/docker.sock
+MONGO_ENABLED=true
+MONGO_DATA_PATH=data/mongo
+MONGO_IMAGE=mongo
+MONGO_VERSION=8.0
+REDIS_ENABLED=true
+REDIS_DATA_PATH=data/redis
+REDIS_IMAGE=redis:7.4
+REDIS_AOF_PERSISTENCE=true
+```
+
+## config/variables.env
+```bash
+OVERLEAF_SITE_URL=http://localhost:8080
+OVERLEAF_APP_NAME="Ayakaleaf Pro"
+EMAIL_CONFIRMATION_DISABLED=true
+TEX_LIVE_DOCKER_IMAGE=ghcr.io/ayaka-notes/texlive-full:2026.1
+ALL_TEX_LIVE_DOCKER_IMAGES=ghcr.io/ayaka-notes/texlive-full:2026.1
+ALL_TEX_LIVE_DOCKER_IMAGE_NAMES="TeX Live 2026"
+SANDBOXED_COMPILES=true
+SANDBOXED_COMPILES_SIBLING_CONTAINERS=true
+SANDBOXED_COMPILES_HOST_DIR=/home/shadm/ayakaleaf-toolkit/data/overleaf/data/compiles
+DOCKER_RUNNER=true
+OVERLEAF_SESSION_SECRET=38c132c99e1ac94ea7ec49b2c67c7dcfa4c2574aeaa7a7700baec4f8d4f09c97
+OVERLEAF_INVITE_TOKEN_SECRET=0+M+x2bPKXLeEkfi+WEWZ8tVlnEBU9lWUKTK9vkaQAU=
+```
+
+## lib/shared-functions.sh - read_configuration function (FIXED)
+```bash
+function read_configuration() {
+  local name=$1
+  local line
+  line=$(grep -E "^$name=" "$TOOLKIT_ROOT/config/overleaf.rc")
+  if [[ -z "$line" ]]; then
+    return
+  fi
+  line=${line#*=}
+  line=${line#\"}
+  line=${line%\"}
+  line=${line#'"'"'}
+  line=${line%'"'"'}
+  echo "$line"
+}
+```
+
+================================================================================
+= DAILY OPERATIONS COMMANDS
+================================================================================
+
+## Start (from Windows PowerShell)
+```powershell
+# Daily start
+wsl -d Ubuntu -- bash -c "cd /home/shadm/ayakaleaf-toolkit && bash bin/start"
+
+# Full restart (fixes most issues)
+wsl -d Ubuntu -- bash -c "cd /home/shadm/ayakaleaf-toolkit && bash bin/up -d"
+
+# Check status
+wsl -d Ubuntu -- bash -c "cd /home/shadm/ayakaleaf-toolkit && bash bin/docker-compose ps"
+
+# Test web access
+curl.exe -I http://localhost:8080/launchpad
+```
+
+## Access URL
+- **Launchpad**: http://localhost:8080/launchpad
+- **Direct login**: http://localhost:8080/login
+
+================================================================================
+= KNOWN ISSUES (RESOLVED)
+================================================================================
+
+1. **MongoDB version validation** → Fixed by using 8.0 (not 7.0)
+2. **read_configuration regex** → Fixed with parameter expansion
+3. **Docker socket path in Ubuntu** → Fixed with symlink
+4. **Missing secrets** → Generated both SESSION_SECRET and INVITE_TOKEN_SECRET
+5. **Startup race condition (Redis)** → Fixed by restarting sharelatex after Redis healthy
+5. **CRLF line endings** → Fixed with sed -i 's/\r$//' on all scripts
+6. **Docker socket permissions** → www-data added to dockeronhost group
+
+================================================================================
+= NEXT STEPS / FUTURE IMPROVEMENTS
+================================================================================
+
+- [ ] Add automated backup script to cron
+- [ ] Configure HTTPS with self-signed certs for local development
+- [ ] Test multi-user collaboration features
+- [ ] Add monitoring (Prometheus/Grafana) for container health
+- [ ] Document upgrade procedure for new Ayakaleaf Pro versions
+- [ ] Test Chinese document compilation (ctex package)
+
+================================================================================
+= END OF LOG
+================================================================================
